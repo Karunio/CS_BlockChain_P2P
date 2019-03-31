@@ -7,37 +7,82 @@ class Block
 {
     public int Index { get; set; }
     public DateTime TimeStamp { get; set; }
-    public String Data { get; set; }
+    public String FileName { get; set; }
+    public String Extension { get; set; }
+    public String DataHash { get; set; }
     public String PreviousHash { get; set; }
-    public String CurrentHash { get; set; }
+    public String Hash { get; set; }
+    public int Nonce { get; set; }
 
-    public Block(DateTime timeStamp, String previousHash, String data)
+    public Block(String filePath, DateTime timeStamp, String previousHash, String dataHash)
     {
         Index = 0;
         TimeStamp = timeStamp;
         PreviousHash = previousHash;
-        Data = data;
-        CurrentHash = CalculateHash();
+        DataHash = dataHash;
+        Hash = CalculateHash();
+        Nonce = 0;
     }
 
-    //블록내의 멤버들을 연결하여 해쉬함수를 계산.
+    //Set a FileName, Extention, DataHash
+    private void SetFileAttributes()
+    {
+        
+    }
+
+    //If File exist, Read FileData to Binary and Calc Hash
+    private void CalculateDataHash()
+    {
+
+    }
+
+    //Concatenate Filed Members And Calc Hash
     public String CalculateHash()
     {
-        //Hash함수 SHA256을 사용
+        //Use SHA256 Hash Function
         SHA256 sha256 = SHA256.Create();
 
-        //메모리최적화를 위해 StringBuilder 사용 후 필요멤버 추가
+        //Use StringBuilder for Concatenate Members
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append($"{ TimeStamp }");
-        stringBuilder.Append($"{ Data }");
-        stringBuilder.Append($"{ PreviousHash ?? "" }");
+        stringBuilder.Append($"{ TimeStamp }{ DataHash }{ PreviousHash ?? "" }{ Nonce }");
 
-
-        //sha256 생성
+        //Calc SHA256
         byte[] inputDatas = Encoding.UTF8.GetBytes(stringBuilder.ToString());
         byte[] outputDatas = sha256.ComputeHash(inputDatas);
 
-        //생성된 Byte[]를 String값으로 변경 -Hex형식
+        //Created Byte[] Change to String
         return BitConverter.ToString(outputDatas).Replace("-", String.Empty);
+    }
+
+    //Calculate Hash According to DiffString
+    public void Mining(String diffString)
+    {
+        while (Hash == null || Hash.Substring(0, diffString.Length) != diffString)
+        {
+            Nonce++;
+            Hash = CalculateHash();
+        }
+    }
+
+    //Print Block to Console
+    public void PrintConsole()
+    {
+        Console.WriteLine($"Index: { Index }");
+        Console.WriteLine($"TimeStamp: { TimeStamp }");
+        Console.WriteLine($"FileName: { FileName }");
+        Console.WriteLine($"Extension: { Extension }");
+        Console.WriteLine($"DataHash: { DataHash }");
+        Console.WriteLine($"PreviousHash: { PreviousHash ?? "" }");
+        Console.WriteLine($"Hash: { Hash }");
+        Console.WriteLine($"Nonce: { Nonce }");
+    }
+
+    //ToString Override According to Block
+    public override String ToString()
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.Append($"{ Index }{ TimeStamp }{ DataHash }{ PreviousHash ?? "" }{ Hash }{ Nonce }");
+
+        return stringBuilder.ToString();
     }
 }
