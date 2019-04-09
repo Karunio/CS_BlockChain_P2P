@@ -1,57 +1,34 @@
 using System.Text;
-using System.Security.Cryptography;
 using System;
-using System.Security;
+using Newtonsoft.Json;
 
 class Block
 {
     public int Index { get; set; }
     public DateTime TimeStamp { get; set; }
-    public String FileName { get; set; }
-    public String Extension { get; set; }
-    public String DataHash { get; set; }
     public String PreviousHash { get; set; }
     public String Hash { get; set; }
+    public Filesactions Filesactions { get; set; }
     public int Nonce { get; set; }
 
-    public Block(String filePath, DateTime timeStamp, String previousHash, String dataHash)
+    public Block(DateTime timeStamp, String previousHash, Filesactions filesactions)
     {
         Index = 0;
         TimeStamp = timeStamp;
         PreviousHash = previousHash;
-        DataHash = dataHash;
-        Hash = CalculateHash();
+        this.Filesactions = filesactions;
         Nonce = 0;
     }
 
-    //Set a FileName, Extention, DataHash
-    private void SetFileAttributes()
-    {
-        
-    }
-
-    //If File exist, Read FileData to Binary and Calc Hash
-    private void CalculateDataHash()
-    {
-
-    }
-
     //Concatenate Filed Members And Calc Hash
-    public String CalculateHash()
+    public String CalculateBlockHash()
     {
-        //Use SHA256 Hash Function
-        SHA256 sha256 = SHA256.Create();
-
         //Use StringBuilder for Concatenate Members
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append($"{ TimeStamp }{ DataHash }{ PreviousHash ?? "" }{ Nonce }");
+        stringBuilder.Append($"{ TimeStamp }");
+        stringBuilder.Append($"{ PreviousHash }{ JsonConvert.SerializeObject(Filesactions) }{ Nonce }");
 
-        //Calc SHA256
-        byte[] inputDatas = Encoding.UTF8.GetBytes(stringBuilder.ToString());
-        byte[] outputDatas = sha256.ComputeHash(inputDatas);
-
-        //Created Byte[] Change to String
-        return BitConverter.ToString(outputDatas).Replace("-", String.Empty);
+        return HashTools.ToBase64Hash(stringBuilder.ToString());
     }
 
     //Calculate Hash According to DiffString
@@ -60,7 +37,7 @@ class Block
         while (Hash == null || Hash.Substring(0, diffString.Length) != diffString)
         {
             Nonce++;
-            Hash = CalculateHash();
+            Hash = CalculateBlockHash();
         }
     }
 
@@ -69,19 +46,17 @@ class Block
     {
         Console.WriteLine($"Index: { Index }");
         Console.WriteLine($"TimeStamp: { TimeStamp }");
-        Console.WriteLine($"FileName: { FileName }");
-        Console.WriteLine($"Extension: { Extension }");
-        Console.WriteLine($"DataHash: { DataHash }");
-        Console.WriteLine($"PreviousHash: { PreviousHash ?? "" }");
+        Console.WriteLine($"PreviousHash: { PreviousHash }");
         Console.WriteLine($"Hash: { Hash }");
-        Console.WriteLine($"Nonce: { Nonce }");
+        Console.WriteLine($"Nonce: { Nonce }\n");
     }
 
     //ToString Override According to Block
     public override String ToString()
     {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append($"{ Index }{ TimeStamp }{ DataHash }{ PreviousHash ?? "" }{ Hash }{ Nonce }");
+        stringBuilder.Append($"{ Index }-{ TimeStamp }-");
+        stringBuilder.Append($"{ PreviousHash }-{ Hash }-{ Nonce }");
 
         return stringBuilder.ToString();
     }

@@ -7,7 +7,7 @@ class BlockChain
     public int Difficulty { get; set; }
     public String DiffString { get; set; }
 
-    BlockChain()
+    public BlockChain()
     {
         Init();
     }
@@ -24,7 +24,8 @@ class BlockChain
     //Add to List GenesisBlock
     private Block CreateGenesisBlock()
     {
-        Block genesis = new Block(null, DateTime.Now, null, null);
+        Block genesis = new Block(DateTime.Today, "null", new Filesactions("Genesis"));
+        genesis.Mining(DiffString);
         return genesis;
     }
 
@@ -38,7 +39,7 @@ class BlockChain
     //Create String According to Difficulty
     private void CreateDiffString()
     {
-        String DiffString = new String('0', Difficulty);
+        DiffString = new String('0', Difficulty);
     }
 
     //Check BlockChain
@@ -49,7 +50,7 @@ class BlockChain
             Block prevBlock = BlockList[i - 1];
             Block currBlock = BlockList[i];
 
-            if (currBlock.Hash != currBlock.CalculateHash()) return false;
+            if (currBlock.Hash != currBlock.CalculateBlockHash()) return false;
             if (prevBlock.Hash != currBlock.PreviousHash) return false;
         }
 
@@ -68,6 +69,7 @@ class BlockChain
     {
         block.PreviousHash = GetLatestBlock().Hash;
         block.Mining(DiffString);
+        block.Index = BlockList.Count;
         BlockList.Add(block);
     }
 }
