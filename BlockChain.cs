@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 class BlockChain
 {
@@ -24,7 +25,7 @@ class BlockChain
     //Add to List GenesisBlock
     private Block CreateGenesisBlock()
     {
-        Block genesis = new Block(DateTime.Today, "null", new Filesactions("Genesis"));
+        Block genesis = new Block(DateTime.Today, "null", new Filesactions("Genesis2", "Genesis"));
         genesis.Mining(DiffString);
         return genesis;
     }
@@ -61,7 +62,7 @@ class BlockChain
     //Print Blocks in List
     public void PrintBlocks()
     {
-        foreach (var block in BlockList) block.PrintConsole();
+        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.Indented));
     }
 
     //Add Block to List
@@ -71,5 +72,10 @@ class BlockChain
         block.Mining(DiffString);
         block.Index = BlockList.Count;
         BlockList.Add(block);
+    }
+
+    public override String ToString()
+    {
+        return JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }

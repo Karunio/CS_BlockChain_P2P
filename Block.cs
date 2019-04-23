@@ -44,20 +44,12 @@ class Block
     //Print Block to Console
     public void PrintConsole()
     {
-        Console.WriteLine($"Index: { Index }");
-        Console.WriteLine($"TimeStamp: { TimeStamp }");
-        Console.WriteLine($"PreviousHash: { PreviousHash }");
-        Console.WriteLine($"Hash: { Hash }");
-        Console.WriteLine($"Nonce: { Nonce }\n");
+        Console.WriteLine(JsonConvert.SerializeObject(this, Formatting.Indented));
     }
 
     //ToString Override According to Block
     public override String ToString()
     {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append($"{ Index }-{ TimeStamp }-");
-        stringBuilder.Append($"{ PreviousHash }-{ Hash }-{ Nonce }");
-
-        return stringBuilder.ToString();
+        return JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }
