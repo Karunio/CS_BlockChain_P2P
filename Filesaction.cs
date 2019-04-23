@@ -9,6 +9,7 @@ class Filesaction
     public String DataHash { get; set; }
     public DateTime CreationTime { get; set; }
     public DateTime LastWriteTime { get; set; }
+    public DateTime LastAccessTime { get; set; }
 
     public Filesaction(String filePath)
     {
@@ -18,6 +19,7 @@ class Filesaction
         Extension = fileInfo.Extension;
         CreationTime = fileInfo.CreationTime;
         LastWriteTime = fileInfo.LastWriteTime;
+        LastAccessTime = fileInfo.LastAccessTime;
         DataHash = CalculateDataHash(filePath);
     }
 
@@ -27,6 +29,7 @@ class Filesaction
         Extension = fileInfo.Extension;
         CreationTime = fileInfo.CreationTime;
         LastWriteTime = fileInfo.LastWriteTime;
+        LastAccessTime = fileInfo.LastAccessTime;
         DataHash = CalculateDataHash(fileInfo.FullName);
     }
 
