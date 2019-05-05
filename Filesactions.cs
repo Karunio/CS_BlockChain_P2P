@@ -3,30 +3,33 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-class Filesactions
+namespace VSCODE_PR
 {
-    public String CaseID { get; set; }
-    public List<Filesaction> FilesactionList { get; set; }
-
-    public Filesactions(String caseID, String sourceDirectory)
+    class Filesactions
     {
-        FilesactionList = new List<Filesaction>();
-        CaseID = caseID;
-        Directory.CreateDirectory($"./{ CaseID }");
+        public String CaseID { get; set; }
+        public List<Filesaction> FilesactionList { get; set; }
 
-        DirectoryInfo directoryInfo = new DirectoryInfo(sourceDirectory);
-        FileInfo[] files = directoryInfo.GetFiles();
-
-        foreach (var file in files)
+        public Filesactions(String caseID, String sourceDirectory)
         {
-            Filesaction filesaction = new Filesaction(file);
-            FilesactionList.Add(filesaction);
-            file.CopyTo($"./{ CaseID }/{ file.Name }", true);
+            FilesactionList = new List<Filesaction>();
+            CaseID = caseID;
+            Directory.CreateDirectory($"./{ CaseID }");
 
-            var destFile = new FileInfo($"./{ CaseID }/{ file.Name }");
-            destFile.CreationTime = file.CreationTime;
-            destFile.LastAccessTime = file.LastAccessTime;
-            destFile.LastWriteTime = file.LastWriteTime;
+            DirectoryInfo directoryInfo = new DirectoryInfo(sourceDirectory);
+            FileInfo[] files = directoryInfo.GetFiles();
+
+            foreach (var file in files)
+            {
+                Filesaction filesaction = new Filesaction(file);
+                FilesactionList.Add(filesaction);
+                file.CopyTo($"./{ CaseID }/{ file.Name }", true);
+
+                var destFile = new FileInfo($"./{ CaseID }/{ file.Name }");
+                destFile.CreationTime = file.CreationTime;
+                destFile.LastAccessTime = file.LastAccessTime;
+                destFile.LastWriteTime = file.LastWriteTime;
+            }
         }
     }
 }
