@@ -15,11 +15,16 @@ namespace VSCODE_PR
         private const int DownloadPort = 45002;
         private const int BufferSize = 2048;
         public BlockChain Chain { get; set; }
-        public bool Sync = false;
+        public bool Sync { get; set; } = false;
 
         public Node()
         {
 
+        }
+
+        public Node(BlockChain Chain)
+        {
+            this.Chain = Chain;
         }
 
         public void StartListening()
@@ -36,9 +41,10 @@ namespace VSCODE_PR
             syncListener.Start();
             using (Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
             {
-                IPEndPoint groupEP = new IPEndPoint(IPAddress.Broadcast, JoinListenPort);
+                IPAddress broadcast = IPAddress.Parse("192.168.1.255");
+                IPEndPoint groupEP = new IPEndPoint(broadcast, JoinListenPort);
                 client.DontFragment = true;
-                client.Send(HashTools.ToBytesHash("FCFJOIN"));
+                client.SendTo(Convert.FromBase64String(HashTools.ToBase64Hash("FCFJOIN")), groupEP);
             }
 
             using (TcpClient syncServer = syncListener.AcceptTcpClientAsync().Result)
@@ -58,19 +64,19 @@ namespace VSCODE_PR
                         String deSerialJson = Encoding.UTF8.GetString(buffer, 0, nRecieve);
                         Block addBlock = JsonConvert.DeserializeObject(deSerialJson) as Block;
                         this.Chain.AddBlock(addBlock, true);
-                        if(this.Chain.IsChainValid())
+                        if (this.Chain.IsChainValid())
                         {
                             i++;
                             networkStream.Write(Encoding.UTF8.GetBytes("OK"));
                             continue;
                         }
                         else
-                        {                            
+                        {
                             Chain.BlockList.Remove(addBlock);
                             networkStream.Write(Encoding.UTF8.GetBytes("FAIL"));
                         }
                         networkStream.Flush();
-                        
+
                     }
                 }
             }
@@ -101,9 +107,9 @@ namespace VSCODE_PR
 
                         nRecieve = networkStream.Read(buffer);
                         String recvString = Encoding.UTF8.GetString(buffer, 0, nRecieve);
-                        if(recvString == "OK")
+                        if (recvString == "OK")
                         {
-                            i++;                            
+                            i++;
                         }
                     }
                 }

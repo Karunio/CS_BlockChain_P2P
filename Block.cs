@@ -13,7 +13,7 @@ namespace VSCODE_PR
         public Filesactions Filesactions { get; set; }
         public int Nonce { get; set; }
 
-        public Block(DateTime timeStamp, String previousHash, Filesactions filesactions)
+        public Block(DateTime timeStamp, String previousHash = null, Filesactions filesactions = null)
         {
             Index = 0;
             TimeStamp = timeStamp;

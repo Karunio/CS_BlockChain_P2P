@@ -9,10 +9,12 @@ namespace VSCODE_PR
         public List<Block> BlockList { get; set; }
         public int Difficulty { get; set; }
         public String DiffString { get; set; }
+        private String RootDirectory;
 
-        public BlockChain()
+        public BlockChain(String rootDirectory)
         {
             Init();
+            this.RootDirectory = rootDirectory;
         }
 
         //Init Function
@@ -27,7 +29,7 @@ namespace VSCODE_PR
         //Add to List GenesisBlock
         private Block CreateGenesisBlock()
         {
-            Block genesis = new Block(DateTime.Today, "null", new Filesactions("Genesis2", "Genesis"));
+            Block genesis = new Block(new DateTime(2019, 1, 1, 0, 0, 0, DateTimeKind.Utc), "null", null);
             genesis.Mining(DiffString);
             return genesis;
         }
@@ -69,7 +71,6 @@ namespace VSCODE_PR
                     return i;
                 }
             }
-
             return -1;
         }
 
