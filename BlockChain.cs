@@ -85,7 +85,7 @@ namespace VSCODE_PR
         {
             if (sync)
             {
-
+                BlockList.Add(block);
             }
             else
             {
