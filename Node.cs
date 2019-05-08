@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using System;
 using System.Net;
@@ -34,21 +35,18 @@ namespace VSCODE_PR
             join.Start();
         }
 
+        #region Node Try to join Chain Network
         public void StartJoin()
         {
-            byte[] buffer = new byte[BufferSize];
-            TcpListener syncListener = new TcpListener(IPAddress.Any, SyncPort);
-            syncListener.Start();
-            using (Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
+            using (TcpClient syncServer = TcpClientParseFromText("./serverList.txt"))
             {
-                IPAddress broadcast = IPAddress.Parse("192.168.1.255");
-                IPEndPoint groupEP = new IPEndPoint(broadcast, JoinListenPort);
-                client.DontFragment = true;
-                client.SendTo(Convert.FromBase64String(HashTools.ToBase64Hash("FCFJOIN")), groupEP);
-            }
+                if (syncServer == null)
+                {
+                    Console.WriteLine("Network Connection is Unstable");
+                    return;
+                }
 
-            using (TcpClient syncServer = syncListener.AcceptTcpClientAsync().Result)
-            {
+                byte[] buffer = new byte[BufferSize];
                 using (NetworkStream networkStream = syncServer.GetStream())
                 {
                     byte[] sendLatestHash = Convert.FromBase64String(Chain.GetLatestBlock().Hash);
@@ -80,46 +78,60 @@ namespace VSCODE_PR
                     }
                 }
             }
-            syncListener.Stop();
             Sync = true;
         }
 
-        private void StartSync(EndPoint endPoint)
+        private TcpClient TcpClientParseFromText(String fileName)
+        {
+            StreamReader reader = new StreamReader(fileName);
+            String serverIp;
+            while ((serverIp = reader.ReadLine()) != null)
+            {
+                IPAddress ipAddr = IPAddress.Parse(serverIp);
+                IPEndPoint targetEP = new IPEndPoint(ipAddr, JoinListenPort);
+                TcpClient target = new TcpClient(targetEP);
+
+                if (target.Connected)
+                    return target;
+            }
+
+            return null;
+        }
+
+        private void StartSync(TcpClient target)
         {
             byte[] buffer = new byte[BufferSize];
-            IPEndPoint targetEP = new IPEndPoint(((IPEndPoint)endPoint).Address, SyncPort);
-            using (TcpClient target = new TcpClient(targetEP))
+
+            using (NetworkStream networkStream = target.GetStream())
             {
-                using (NetworkStream networkStream = target.GetStream())
+                int nRecieve = networkStream.Read(buffer);
+                String recievedHash = Convert.ToBase64String(buffer, 0, nRecieve);
+
+                int blockIndex = Chain.FindBlockIndex(recievedHash);
+
+                networkStream.Write(BitConverter.GetBytes(blockIndex));
+
+                for (int i = blockIndex; i < Chain.BlockList.Count;)
                 {
-                    int nRecieve = networkStream.Read(buffer);
-                    String recievedHash = Convert.ToBase64String(buffer, 0, nRecieve);
+                    byte[] sendBlock = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Chain.BlockList[i]));
+                    networkStream.Write(sendBlock);
+                    networkStream.Flush();
 
-                    int blockIndex = Chain.FindBlockIndex(recievedHash);
-
-                    networkStream.Write(BitConverter.GetBytes(blockIndex));
-
-                    for (int i = blockIndex; i < Chain.BlockList.Count;)
+                    nRecieve = networkStream.Read(buffer);
+                    String recvString = Encoding.UTF8.GetString(buffer, 0, nRecieve);
+                    if (recvString == "OK")
                     {
-                        byte[] sendBlock = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Chain.BlockList[i]));
-                        networkStream.Write(sendBlock);
-                        networkStream.Flush();
-
-                        nRecieve = networkStream.Read(buffer);
-                        String recvString = Encoding.UTF8.GetString(buffer, 0, nRecieve);
-                        if (recvString == "OK")
-                        {
-                            i++;
-                        }
+                        i++;
                     }
                 }
             }
         }
+        #endregion
 
         private void JoinListening()
         {
-            IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, JoinListenPort);
-
+            TcpListener joinLisetner = new TcpListener(IPAddress.Any, JoinListenPort);
+            joinLisetner.Start();
             while (true)
             {
                 if (!Sync)
@@ -128,13 +140,9 @@ namespace VSCODE_PR
                     continue;
                 }
 
-                using (UdpClient listener = new UdpClient(JoinListenPort))
+                using (TcpClient target = joinLisetner.AcceptTcpClient())
                 {
-                    byte[] receivedData = listener.Receive(ref groupEP);
-                    if (HashTools.ToBase64Hash(receivedData) == HashTools.ToBase64Hash("FCFJOIN"))
-                    {
-                        StartSync(listener.Client.RemoteEndPoint);
-                    }
+                    StartSync(target);
                 }
             }
         }
