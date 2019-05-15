@@ -60,7 +60,7 @@ namespace VSCODE_PR
                     {
                         nRecieve = networkStream.Read(buffer);
                         String deSerialJson = Encoding.UTF8.GetString(buffer, 0, nRecieve);
-                        Block addBlock = JsonConvert.DeserializeObject(deSerialJson) as Block;
+                        Block addBlock = JsonConvert.DeserializeObject<Block>(deSerialJson);
                         this.Chain.AddBlock(addBlock, true);
                         if (this.Chain.IsChainValid())
                         {
@@ -87,9 +87,7 @@ namespace VSCODE_PR
             String serverIp;
             while ((serverIp = reader.ReadLine()) != null)
             {
-                IPAddress ipAddr = IPAddress.Parse(serverIp);
-                IPEndPoint targetEP = new IPEndPoint(ipAddr, JoinListenPort);
-                TcpClient target = new TcpClient(targetEP);
+                TcpClient target = new TcpClient(serverIp, JoinListenPort);
 
                 if (target.Connected)
                     return target;
@@ -108,12 +106,13 @@ namespace VSCODE_PR
                 String recievedHash = Convert.ToBase64String(buffer, 0, nRecieve);
 
                 int blockIndex = Chain.FindBlockIndex(recievedHash);
-
-                networkStream.Write(BitConverter.GetBytes(blockIndex));
+                blockIndex++;
+                networkStream.Write(BitConverter.GetBytes(Chain.BlockList.Count - blockIndex));
+                networkStream.Flush();
 
                 for (int i = blockIndex; i < Chain.BlockList.Count;)
                 {
-                    byte[] sendBlock = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Chain.BlockList[i]));
+                    byte[] sendBlock = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Chain.BlockList[i], Formatting.Indented));
                     networkStream.Write(sendBlock);
                     networkStream.Flush();
 
