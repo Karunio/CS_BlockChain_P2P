@@ -10,6 +10,11 @@ namespace VSCODE_PR
         public String CaseID { get; set; }
         public List<Filesaction> FilesactionList { get; set; }
 
+        public Filesactions()
+        {
+
+        }
+
         public Filesactions(String caseID, String sourceDirectory)
         {
             FilesactionList = new List<Filesaction>();

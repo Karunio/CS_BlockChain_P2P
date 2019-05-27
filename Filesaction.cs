@@ -13,6 +13,11 @@ namespace VSCODE_PR
         public DateTime LastWriteTime { get; set; }
         public DateTime LastAccessTime { get; set; }
 
+        public Filesaction()
+        {
+            
+        }
+
         public Filesaction(String filePath)
         {
             FileInfo fileInfo = new FileInfo(filePath);

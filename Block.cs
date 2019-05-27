@@ -27,7 +27,7 @@ namespace VSCODE_PR
         {
             //Use StringBuilder for Concatenate Members
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append($"{ TimeStamp }");
+            stringBuilder.Append($"{ TimeStamp.Ticks }");
             stringBuilder.Append($"{ PreviousHash }{ JsonConvert.SerializeObject(Filesactions) }{ Nonce }");
 
             return HashTools.ToBase64Hash(stringBuilder.ToString());
