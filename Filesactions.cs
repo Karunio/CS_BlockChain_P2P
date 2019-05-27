@@ -15,11 +15,11 @@ namespace VSCODE_PR
 
         }
 
-        public Filesactions(String caseID, String sourceDirectory)
+        public Filesactions(String root, String caseID, String sourceDirectory)
         {
             FilesactionList = new List<Filesaction>();
             CaseID = caseID;
-            Directory.CreateDirectory($"./{ CaseID }");
+            Directory.CreateDirectory($"{ root }/{ CaseID }");
 
             DirectoryInfo directoryInfo = new DirectoryInfo(sourceDirectory);
             FileInfo[] files = directoryInfo.GetFiles();
@@ -28,9 +28,9 @@ namespace VSCODE_PR
             {
                 Filesaction filesaction = new Filesaction(file);
                 FilesactionList.Add(filesaction);
-                file.CopyTo($"./{ CaseID }/{ file.Name }", true);
+                file.CopyTo($"{ root }/{ CaseID }/{ file.Name }", true);
 
-                var destFile = new FileInfo($"./{ CaseID }/{ file.Name }");
+                var destFile = new FileInfo($"{ root }/{ CaseID }/{ file.Name }");
                 destFile.CreationTime = file.CreationTime;
                 destFile.LastAccessTime = file.LastAccessTime;
                 destFile.LastWriteTime = file.LastWriteTime;

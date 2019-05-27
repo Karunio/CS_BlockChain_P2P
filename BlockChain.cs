@@ -97,6 +97,13 @@ namespace VSCODE_PR
             }
         }
 
+        public void CreateBlock(String sourceDir)
+        {
+            Filesactions filesactions = new Filesactions(RootDirectory, $"부산-남구-부경대-{DateTime.Now.Ticks}", sourceDir);
+            Block block = new Block(DateTime.Now, null, filesactions);
+            AddBlock(block);
+        }
+
         public override String ToString()
         {
             return JsonConvert.SerializeObject(this, Formatting.Indented);
